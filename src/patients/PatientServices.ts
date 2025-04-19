@@ -26,7 +26,7 @@ export class PatientsService {
 
     const user = await this.userService.createUser({ email: createPatientDTO.email, password: createPatientDTO.password, role: 'Patient' })
 
-    const createdPatient = await this.patientRepository.save({
+    await this.patientRepository.save({
       name: createPatientDTO.name,
       phone: createPatientDTO.phone,
       birthDate: createPatientDTO.birthDate,
