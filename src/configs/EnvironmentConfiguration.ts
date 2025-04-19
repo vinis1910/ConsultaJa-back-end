@@ -1,24 +1,20 @@
-import { Logger } from '@nestjs/common';
-import { envValidationSchema } from './EnvironmentValidationSchema';
-import Joi from 'joi';
+import * as dotenv from 'dotenv'
+dotenv.config()
 
-if (
-  !envValidationSchema ||
-  !envValidationSchema['_ids'] ||
-  !envValidationSchema['_ids']['_byKey']
-) {
-  Logger.error('envValidationSchema is not defined');
-  process.exit(1);
+import { Logger } from '@nestjs/common'
+import { envValidationSchema } from './EnvironmentValidationSchema'
+
+const { value: ENVIRONMENT, error } = envValidationSchema.validate(process.env, {
+  abortEarly: false,
+  allowUnknown: true,
+})
+
+if (error) {
+  Logger.error('Erro ao validar variáveis de ambiente:')
+  error.details.forEach((detail) => {
+    Logger.error(`- ${detail.message}`)
+  })
+  process.exit(1)
 }
 
-const processEnv = [...envValidationSchema['_ids']['_byKey']].reduce(
-  (acc, it) => {
-    acc[it[0]] = process.env[it[0]];
-    return acc;
-  },
-  {},
-);
-
-const ENVIRONMENT = Joi.attempt(processEnv, envValidationSchema);
-
-export default ENVIRONMENT as NonNullable<typeof ENVIRONMENT>;
+export default ENVIRONMENT as Record<string, string>

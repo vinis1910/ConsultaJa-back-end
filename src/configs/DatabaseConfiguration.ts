@@ -1,6 +1,6 @@
-import { DynamicModule } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import ENVIRONMENT from './EnvironmentConfiguration';
+import { DynamicModule } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import ENVIRONMENT from './EnvironmentConfiguration'
 
 export const Database: DynamicModule = TypeOrmModule.forRootAsync({
   useFactory: async () => ({
@@ -8,9 +8,8 @@ export const Database: DynamicModule = TypeOrmModule.forRootAsync({
     host: ENVIRONMENT.DB_HOST,
     port: Number(ENVIRONMENT.DB_PORT),
     username: ENVIRONMENT.DB_USER,
-    password: ENVIRONMENT.DB_PASSWORD,
+    password: ENVIRONMENT.DB_PASS,
     database: ENVIRONMENT.DB_NAME,
-    logging: ENVIRONMENT.DB_DEBUG,
     entities: ['dist/entities/*{.ts,.js}', 'dist/entities/audit/*{.ts,.js}'],
     subscribers: ['dist/subscribers/*{.ts,.js}'],
     autoLoadEntities: true,
@@ -19,4 +18,4 @@ export const Database: DynamicModule = TypeOrmModule.forRootAsync({
     },
     synchronize: false,
   }),
-});
+})

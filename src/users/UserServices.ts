@@ -21,7 +21,7 @@ export class UsersService {
     if (user) throw new BadRequestException(`An user already registered with email=${createUserDTO.email}.`)
 
     const encryptedPassword = await this.encryptPassword(createUserDTO.password)
-    const createdUser = await this.userRepository.save({ email: createUserDTO.email, password: encryptedPassword, role: createUserDTO.role })
+    const createdUser = await this.userRepository.save({ email: createUserDTO.email, password: encryptedPassword, role: createUserDTO.role, createdAt: new Date() })
 
     return createdUser
   }
