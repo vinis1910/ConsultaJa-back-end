@@ -4,6 +4,7 @@ import { PatientEntity } from './PatientEntity'
 import { Repository } from 'typeorm'
 import { CreatePatientDTO } from './dto/CreatePatientDTO'
 import { UsersService } from 'src/users/UserServices'
+import { ReturnCreatedPatientDTO } from './dto/ReturnCreatedPatientDTO'
 
 @Injectable()
 export class PatientsService {
@@ -12,7 +13,7 @@ export class PatientsService {
     private readonly userService: UsersService,
   ) {}
 
-  async createPatient(createPatientDTO: CreatePatientDTO) {
+  async createPatient(createPatientDTO: CreatePatientDTO): Promise<ReturnCreatedPatientDTO> {
     if (!createPatientDTO.name) throw new BadRequestException('Name is a required field.')
     if (!createPatientDTO.phone) throw new BadRequestException('Phone is a required field.')
     if (!createPatientDTO.gender) throw new BadRequestException('Gender is a required field.')
@@ -34,7 +35,7 @@ export class PatientsService {
       userId: user.id,
     })
 
-    return { name: createdPatient.name, cpf: createPatientDTO.cpf }
+    return new ReturnCreatedPatientDTO(createPatientDTO.email)
   }
 
   isValidCPF(cpf: string): boolean {
