@@ -1,16 +1,19 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id: number
 
   @Column({ name: 'email', type: 'varchar' })
-  email: string;
+  email: string
 
   @Column({ name: 'password', type: 'varchar' })
-  password: string;
+  password: string
 
   @Column({ name: 'role', type: 'varchar' })
-  role: string;
+  role: string
+
+  @Column({ name: 'created_at', type: 'timestamp' })
+  createdAt: Date
 }
