@@ -1,22 +1,22 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity('message_chat')
 export class MedicalRecordEntity {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id: number
 
   @Column({ name: 'reason', type: 'varchar' })
-  reason: string;
+  reason: string
 
   @Column({ name: 'anamnese', type: 'varchar' })
-  anamnese: string;
+  anamnese: string
 
   @Column({ name: 'diagnostic', type: 'varchar' })
-  diagnostic: string;
+  diagnostic: string
 
   @Column({ name: 'created_at', type: 'timestamp' })
-  createdAt: Date;
+  createdAt: Date
 
   @Column({ name: 'appointment_id', type: 'integer' })
-  appointmentId: number;
+  appointmentId: number
 }
