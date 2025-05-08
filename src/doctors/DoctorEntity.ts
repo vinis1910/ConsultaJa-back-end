@@ -1,13 +1,34 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity('doctors')
 export class DoctorEntity {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id: number
 
   @Column({ name: 'name', type: 'varchar' })
-  name: string;
+  name: string
+
+  @Column({ name: 'birth_date', type: 'date' })
+  birthDate: Date
+
+  @Column({ name: 'gender', type: 'varchar' })
+  gender: string
+
+  @Column({ name: 'cpf', type: 'varchar' })
+  cpf: string
+
+  @Column({ name: 'crm', type: 'varchar' })
+  crm: string
+
+  @Column({ name: 'phone', type: 'varchar' })
+  phone: string
+
+  @Column({ name: 'crm_uf', type: 'varchar' })
+  crmUf: string
+
+  @Column({ name: 'createdAt', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date
 
   @Column({ name: 'user_id', type: 'integer' })
-  userId: number;
+  userId: number
 }

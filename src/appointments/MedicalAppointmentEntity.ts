@@ -1,25 +1,26 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { AppointmentStatus } from './AppointmetsStatus'
 
 @Entity('medical_appointment')
 export class MedicalAppointmentEntity {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id: number
 
   @Column({ name: 'date', type: 'timestamp' })
-  date: Date;
+  date: Date
 
-  @Column({ name: 'status', type: 'varchar' })
-  status: string;
+  @Column({ name: 'status', type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.SCHEDULED })
+  status: AppointmentStatus
 
   @Column({ name: 'price', type: 'numeric' })
-  price: number;
+  price: number
 
   @Column({ name: 'patient_id', type: 'integer' })
-  patientId: number;
+  patientId: number
 
   @Column({ name: 'doctor_id', type: 'integer' })
-  doctorId: number;
+  doctorId: number
 
   @Column({ name: 'created_at', type: 'timestamp' })
-  createdAt: Date;
+  createdAt: Date
 }
