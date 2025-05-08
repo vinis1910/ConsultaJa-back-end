@@ -1,17 +1,17 @@
-import { Body, Controller, HttpException, InternalServerErrorException, Post } from '@nestjs/common'
+import { Body, Controller, HttpException, HttpStatus, InternalServerErrorException, Post } from '@nestjs/common'
 import { DoctorsService } from './DoctorServices'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
-import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
+import { ResponseDTO } from 'src/utils/ReponseDTO'
 
 @Controller('doctors')
 export class DoctorsController {
   constructor(private readonly doctorsService: DoctorsService) {}
 
   @Post()
-  async createDoctor(@Body() createDoctorDTO: CreateDoctorDTO): Promise<ReturnCreatedDoctorDTO> {
+  async create(@Body() createDoctorDTO: CreateDoctorDTO): Promise<ResponseDTO> {
     try {
       const doctor = await this.doctorsService.createDoctor(createDoctorDTO)
-      return doctor
+      return new ResponseDTO(HttpStatus.CREATED, 'Doctor created', doctor)
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error
       if (error instanceof Error) {

@@ -1,13 +1,4 @@
 export class ReturnCreatedDoctorDTO {
-  id: number
-  name: string
-  birthDate: Date
-  crm: string
-  crmUf: string
-  phone: string
-  email: string
-  password: string
-
   constructor(id: number, name: string, birthDate: Date, crm: string, crmUf: string, phone: string, email: string) {
     this.id = id
     this.name = name
@@ -17,4 +8,12 @@ export class ReturnCreatedDoctorDTO {
     this.phone = phone
     this.email = email
   }
+  id: number
+  name: string
+  birthDate: Date
+  crm: string
+  crmUf: string
+  phone: string
+  email: string
+  password: string
 }
