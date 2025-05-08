@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { AppointmentStatus } from './AppointmetsStatus'
 
 @Entity('medical_appointment')
 export class MedicalAppointmentEntity {
@@ -8,8 +9,8 @@ export class MedicalAppointmentEntity {
   @Column({ name: 'date', type: 'timestamp' })
   date: Date
 
-  @Column({ name: 'status', type: 'varchar' })
-  status: string
+  @Column({ name: 'status', type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.SCHEDULED })
+  status: AppointmentStatus
 
   @Column({ name: 'price', type: 'numeric' })
   price: number

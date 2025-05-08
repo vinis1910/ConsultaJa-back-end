@@ -1,14 +1,13 @@
 export class ReturnCreatedAppointmentDTO {
-  constructor(date: string, status: string, price: number, patientId: number, doctorId: number) {
+  constructor(date: string, price: number, doctorName: string, patientName: string) {
     this.date = date
-    this.status = status
     this.price = price
-    this.patientId = patientId
-    this.doctorId = doctorId
+    this.doctorName = doctorName
+    this.patientName = patientName
   }
+
   date: string
-  status: string
   price: number
-  patientId: number
-  doctorId: number
+  doctorName: string
+  patientName: string
 }

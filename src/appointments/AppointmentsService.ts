@@ -6,6 +6,7 @@ import { CreateAppointmentDTO } from './dto/CreateAppointmentDTO'
 import { ReturnCreatedAppointmentDTO } from './dto/ReturnCreatedAppointmentDTO'
 import { PatientEntity } from 'src/patients/PatientEntity'
 import { DoctorEntity } from 'src/doctors/DoctorEntity'
+import { AppointmentStatus } from './AppointmetsStatus'
 
 @Injectable()
 export class AppointmentsService {
@@ -20,20 +21,19 @@ export class AppointmentsService {
 
   async createAppointment(createAppointmentDTO: CreateAppointmentDTO): Promise<ReturnCreatedAppointmentDTO> {
     if (!createAppointmentDTO.date) throw new BadRequestException('Date is a required field.')
-    if (!createAppointmentDTO.status) throw new BadRequestException('Status is a required field.')
     if (!createAppointmentDTO.price || createAppointmentDTO.price <= 0) throw new BadRequestException('Price must be greater than zero.')
     if (!createAppointmentDTO.patientId) throw new BadRequestException('Patient ID is a required field.')
     if (!createAppointmentDTO.doctorId) throw new BadRequestException('Doctor ID is a required field.')
 
-    const patientExists = await this.patientRepository.findOneBy({ id: createAppointmentDTO.patientId })
-    if (!patientExists) throw new BadRequestException(`Paciente com ID=${createAppointmentDTO.patientId} não existe.`)
+    const patient = await this.patientRepository.findOneBy({ id: createAppointmentDTO.patientId })
+    if (!patient) throw new BadRequestException(`Paciente com ID=${createAppointmentDTO.patientId} não existe.`)
 
-    const doctorExists = await this.doctorRepository.findOneBy({ id: createAppointmentDTO.doctorId })
-    if (!doctorExists) throw new BadRequestException(`Médico com ID=${createAppointmentDTO.doctorId} não existe.`)
+    const doctor = await this.doctorRepository.findOneBy({ id: createAppointmentDTO.doctorId })
+    if (!doctor) throw new BadRequestException(`Médico com ID=${createAppointmentDTO.doctorId} não existe.`)
 
     const appointment = this.appointmentRepository.create({
       date: createAppointmentDTO.date,
-      status: createAppointmentDTO.status,
+      status: AppointmentStatus.SCHEDULED,
       price: createAppointmentDTO.price,
       patientId: createAppointmentDTO.patientId,
       doctorId: createAppointmentDTO.doctorId,
@@ -42,6 +42,6 @@ export class AppointmentsService {
 
     const savedAppointment = await this.appointmentRepository.save(appointment)
 
-    return new ReturnCreatedAppointmentDTO(savedAppointment.date.toISOString(), savedAppointment.status, Number(savedAppointment.price), savedAppointment.patientId, savedAppointment.doctorId)
+    return new ReturnCreatedAppointmentDTO(savedAppointment.date.toISOString(), Number(savedAppointment.price), doctor.name, patient.name)
   }
 }
