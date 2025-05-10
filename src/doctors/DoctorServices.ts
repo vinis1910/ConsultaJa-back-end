@@ -28,9 +28,6 @@ export class DoctorsService {
     const doctorWithCpf = await this.doctorRepository.findOneBy({ cpf: createDoctorDTO.cpf })
     if (doctorWithCpf) throw new BadRequestException(`Médico com CPF=${createDoctorDTO.cpf} já existente.`)
 
-    const doctorWithCrm = await this.doctorRepository.findOneBy({ crm: createDoctorDTO.crm })
-    if (doctorWithCrm) throw new BadRequestException(`Médico com CRM=${createDoctorDTO.crm} já existente.`)
-
     const user = await this.userService.createUser({ email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' })
 
     const doctor = this.doctorRepository.create({
