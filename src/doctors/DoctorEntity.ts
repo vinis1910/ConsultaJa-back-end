@@ -26,7 +26,7 @@ export class DoctorEntity {
   @Column({ name: 'crm_uf', type: 'varchar' })
   crmUf: string
 
-  @Column({ name: 'created_at', type: 'timestamp' })
+  @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date
 
   @Column({ name: 'user_id', type: 'integer' })

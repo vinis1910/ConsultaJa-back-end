@@ -21,6 +21,6 @@ export class MedicalAppointmentEntity {
   @Column({ name: 'doctor_id', type: 'integer' })
   doctorId: number
 
-  @Column({ name: 'created_at', type: 'timestamp' })
+  @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date
 }

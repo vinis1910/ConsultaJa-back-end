@@ -1,16 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm'
+import { DataSource, Repository } from 'typeorm'
 import { DoctorEntity } from './DoctorEntity'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
-import { UsersService } from 'src/users/UserServices'
+import { UserEntity } from 'src/users/UserEntity'
 @Injectable()
 export class DoctorsService {
   constructor(
     @InjectRepository(DoctorEntity)
     private readonly doctorRepository: Repository<DoctorEntity>,
-    private readonly userService: UsersService,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) {}
 
   async createDoctor(createDoctorDTO: CreateDoctorDTO): Promise<ReturnCreatedDoctorDTO> {
@@ -28,22 +29,25 @@ export class DoctorsService {
     const doctorWithCpf = await this.doctorRepository.findOneBy({ cpf: createDoctorDTO.cpf })
     if (doctorWithCpf) throw new BadRequestException(`Médico com CPF=${createDoctorDTO.cpf} já existente.`)
 
-    const user = await this.userService.createUser({ email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' })
+    return await this.dataSource.transaction(async (manager) => {
+      const user = manager.create(UserEntity, { email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' })
 
-    const doctor = this.doctorRepository.create({
-      name: createDoctorDTO.name,
-      birthDate: createDoctorDTO.birthDate,
-      gender: createDoctorDTO.gender,
-      cpf: createDoctorDTO.cpf,
-      crm: createDoctorDTO.crm,
-      crmUf: createDoctorDTO.crmUf,
-      phone: createDoctorDTO.phone,
-      userId: user.id,
+      const doctor = manager.create(DoctorEntity, {
+        name: createDoctorDTO.name,
+        birthDate: createDoctorDTO.birthDate,
+        gender: createDoctorDTO.gender,
+        cpf: createDoctorDTO.cpf,
+        crm: createDoctorDTO.crm,
+        crmUf: createDoctorDTO.crmUf,
+        phone: createDoctorDTO.phone,
+        userId: user.id,
+        createdAt: new Date(),
+      })
+
+      const savedDoctor = await manager.save(doctor)
+
+      return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.name, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
     })
-
-    const savedDoctor = await this.doctorRepository.save(doctor)
-
-    return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.name, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
   }
 
   private isValidCPF(cpf: string): boolean {
