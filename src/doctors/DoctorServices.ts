@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository, InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { DoctorEntity } from './DoctorEntity'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
+import { UsersService } from 'src/users/UserServices'
 import { UserEntity } from 'src/users/UserEntity'
 @Injectable()
 export class DoctorsService {
@@ -12,6 +13,7 @@ export class DoctorsService {
     private readonly doctorRepository: Repository<DoctorEntity>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
+    private readonly userService: UsersService,
   ) {}
 
   async createDoctor(createDoctorDTO: CreateDoctorDTO): Promise<ReturnCreatedDoctorDTO> {
@@ -26,13 +28,15 @@ export class DoctorsService {
     if (!this.isValidCPF(createDoctorDTO.cpf)) throw new BadRequestException('CPF is not valid.')
     if (!this.isValidCRM(createDoctorDTO.crm)) throw new BadRequestException('CRM is not valid.')
 
-    const doctorWithCpf = await this.doctorRepository.findOneBy({ cpf: createDoctorDTO.cpf })
-    if (doctorWithCpf) throw new BadRequestException(`Médico com CPF=${createDoctorDTO.cpf} já existente.`)
+    const doctor = await this.doctorRepository.findOneBy({ cpf: createDoctorDTO.cpf })
+    if (doctor) throw new BadRequestException(`Doctor with CPF=${createDoctorDTO.cpf} already exists.`)
 
     return await this.dataSource.transaction(async (manager) => {
-      const user = manager.create(UserEntity, { email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' })
+      const userRepository = manager.getRepository(UserEntity)
+      const doctorRepository = manager.getRepository(DoctorEntity)
+      const user = await this.userService.createUser({ email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' }, userRepository)
 
-      const doctor = manager.create(DoctorEntity, {
+      const savedDoctor = await doctorRepository.save({
         name: createDoctorDTO.name,
         birthDate: createDoctorDTO.birthDate,
         gender: createDoctorDTO.gender,
@@ -44,7 +48,7 @@ export class DoctorsService {
         createdAt: new Date(),
       })
 
-      const savedDoctor = await manager.save(doctor)
+      Logger.log(`Doctor ${savedDoctor.id} successfully created.`)
 
       return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.name, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
     })

@@ -20,8 +20,8 @@ export class AppointmentsService {
   ) {}
 
   async createAppointment(createAppointmentDTO: CreateAppointmentDTO): Promise<ReturnCreatedAppointmentDTO> {
-    if (!createAppointmentDTO.date) throw new BadRequestException('Date is a required field.')
-    if (!createAppointmentDTO.price || createAppointmentDTO.price <= 0) throw new BadRequestException('Price must be greater than zero.')
+    if (!createAppointmentDTO.date || new Date(createAppointmentDTO.date) < new Date()) throw new BadRequestException('Date is a required field or must be greater than the current date.')
+    if (createAppointmentDTO.price == undefined || createAppointmentDTO.price < 0) throw new BadRequestException('Price could not be less than zero.')
     if (!createAppointmentDTO.patientId) throw new BadRequestException('Patient ID is a required field.')
     if (!createAppointmentDTO.doctorId) throw new BadRequestException('Doctor ID is a required field.')
 

@@ -1,5 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { UserEntity } from './UserEntity'
 import { Repository } from 'typeorm'
 import { CreateUserDTO } from './dto/CreateUserDTO'
@@ -7,21 +6,18 @@ import * as bcrypt from 'bcryptjs'
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
-  ) {}
+  constructor() {}
 
-  async createUser(createUserDTO: CreateUserDTO): Promise<UserEntity> {
+  async createUser(createUserDTO: CreateUserDTO, userRepository: Repository<UserEntity>): Promise<UserEntity> {
     if (!createUserDTO.email) throw new BadRequestException('Email is a required field.')
     if (!createUserDTO.password) throw new BadRequestException('Password is a required field.')
     if (!createUserDTO.role) throw new BadRequestException('Role is a required field.')
 
-    const user = await this.userRepository.findOneBy({ email: createUserDTO.email })
-    if (user) throw new BadRequestException(`An user already registered with email=${createUserDTO.email}.`)
+    const user = await userRepository.findOneBy({ email: createUserDTO.email })
+    if (user) throw new BadRequestException(`Usuário ja cadastrado com email=${createUserDTO.email}.`)
 
     const encryptedPassword = await this.encryptPassword(createUserDTO.password)
-    const createdUser = await this.userRepository.save({ email: createUserDTO.email, password: encryptedPassword, role: createUserDTO.role, createdAt: new Date() })
+    const createdUser = await userRepository.save({ email: createUserDTO.email, password: encryptedPassword, role: createUserDTO.role, createdAt: new Date() })
 
     return createdUser
   }

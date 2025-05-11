@@ -14,11 +14,5 @@ export class CreatePatientDTO {
   birthDate: Date
 
   @IsString()
-  gender: string
-
-  @IsString()
   phone: string
-
-  @IsString()
-  cpf: string
 }

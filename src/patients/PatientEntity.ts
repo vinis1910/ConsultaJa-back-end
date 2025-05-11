@@ -8,12 +8,6 @@ export class PatientEntity {
   @Column({ name: 'name', type: 'varchar' })
   name: string
 
-  @Column({ name: 'cpf', type: 'varchar' })
-  cpf: string
-
-  @Column({ name: 'gender', type: 'varchar' })
-  gender: string
-
   @Column({ name: 'phone', type: 'varchar' })
   phone: string
 
