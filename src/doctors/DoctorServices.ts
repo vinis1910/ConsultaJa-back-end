@@ -4,13 +4,12 @@ import { DataSource, Repository } from 'typeorm'
 import { DoctorEntity } from './DoctorEntity'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
-import { UsersService } from 'src/users/UserServices'
+import { UserEntity } from 'src/users/UserEntity'
 @Injectable()
 export class DoctorsService {
   constructor(
     @InjectRepository(DoctorEntity)
     private readonly doctorRepository: Repository<DoctorEntity>,
-    private readonly userService: UsersService,
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
@@ -31,7 +30,7 @@ export class DoctorsService {
     if (doctorWithCpf) throw new BadRequestException(`Médico com CPF=${createDoctorDTO.cpf} já existente.`)
 
     return await this.dataSource.transaction(async (manager) => {
-      const user = await this.userService.createUser({ email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' })
+      const user = manager.create(UserEntity, { email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' })
 
       const doctor = manager.create(DoctorEntity, {
         name: createDoctorDTO.name,
