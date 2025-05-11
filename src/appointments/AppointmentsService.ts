@@ -42,6 +42,6 @@ export class AppointmentsService {
 
     const savedAppointment = await this.appointmentRepository.save(appointment)
 
-    return new ReturnCreatedAppointmentDTO(savedAppointment.date.toISOString(), Number(savedAppointment.price), doctor.name, patient.name)
+    return new ReturnCreatedAppointmentDTO(new Date(savedAppointment.date).toISOString(), Number(savedAppointment.price), doctor.name, patient.name)
   }
 }
