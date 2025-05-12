@@ -5,8 +5,11 @@ export class DoctorEntity {
   @PrimaryGeneratedColumn('increment')
   id: number
 
-  @Column({ name: 'name', type: 'varchar' })
-  name: string
+  @Column({ name: 'first_name', type: 'varchar' })
+  firstName: string
+
+  @Column({ name: 'last_name', type: 'varchar' })
+  lastName: string
 
   @Column({ name: 'birth_date', type: 'date' })
   birthDate: Date
@@ -25,9 +28,6 @@ export class DoctorEntity {
 
   @Column({ name: 'crm_uf', type: 'varchar' })
   crmUf: string
-
-  @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date
 
   @Column({ name: 'user_id', type: 'integer' })
   userId: number

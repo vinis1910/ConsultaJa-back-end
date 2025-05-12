@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository, InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { DoctorEntity } from './DoctorEntity'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
+import { UsersService } from 'src/users/UserServices'
 import { UserEntity } from 'src/users/UserEntity'
 @Injectable()
 export class DoctorsService {
@@ -12,28 +13,33 @@ export class DoctorsService {
     private readonly doctorRepository: Repository<DoctorEntity>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
+    private readonly userService: UsersService,
   ) {}
 
   async createDoctor(createDoctorDTO: CreateDoctorDTO): Promise<ReturnCreatedDoctorDTO> {
-    if (!createDoctorDTO.name) throw new BadRequestException('Name is a required field.')
-    if (!createDoctorDTO.birthDate) throw new BadRequestException('Birth Date is a required field.')
-    if (!createDoctorDTO.gender) throw new BadRequestException('Gender is a required field.')
-    if (!createDoctorDTO.cpf) throw new BadRequestException('CPF is a required field.')
-    if (!createDoctorDTO.crm) throw new BadRequestException('CRM is a required field.')
-    if (!createDoctorDTO.crmUf) throw new BadRequestException('CRM UF is a required field.')
-    if (!createDoctorDTO.phone) throw new BadRequestException('Phone is a required field.')
+    if (!createDoctorDTO.firstName) throw new BadRequestException('Primeiro nome é um campo requerido.')
+    if (!createDoctorDTO.lastName) throw new BadRequestException('Ultimo é um campo requerido.')
+    if (!createDoctorDTO.birthDate) throw new BadRequestException('Data de nascimento é um campo requerido.')
+    if (!createDoctorDTO.gender) throw new BadRequestException('Gênero é um campo requerido.')
+    if (!createDoctorDTO.cpf) throw new BadRequestException('CPF é um campo requerido.')
+    if (!createDoctorDTO.crm) throw new BadRequestException('CRM é um campo requerido.')
+    if (!createDoctorDTO.crmUf) throw new BadRequestException('CRM UF é um campo requerido.')
+    if (!createDoctorDTO.phone) throw new BadRequestException('Telefone é um campo requerido.')
 
-    if (!this.isValidCPF(createDoctorDTO.cpf)) throw new BadRequestException('CPF is not valid.')
-    if (!this.isValidCRM(createDoctorDTO.crm)) throw new BadRequestException('CRM is not valid.')
+    if (!this.isValidCPF(createDoctorDTO.cpf)) throw new BadRequestException('CPF não é válido.')
+    if (!this.isValidCRM(createDoctorDTO.crm)) throw new BadRequestException('CRM não é válido.')
 
-    const doctorWithCpf = await this.doctorRepository.findOneBy({ cpf: createDoctorDTO.cpf })
-    if (doctorWithCpf) throw new BadRequestException(`Médico com CPF=${createDoctorDTO.cpf} já existente.`)
+    const doctor = await this.doctorRepository.findOneBy({ cpf: createDoctorDTO.cpf })
+    if (doctor) throw new BadRequestException(`Médico(a) com CPF=${createDoctorDTO.cpf} já existente.`)
 
     return await this.dataSource.transaction(async (manager) => {
-      const user = manager.create(UserEntity, { email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' })
+      const userRepository = manager.getRepository(UserEntity)
+      const doctorRepository = manager.getRepository(DoctorEntity)
+      const user = await this.userService.createUser({ email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' }, userRepository)
 
-      const doctor = manager.create(DoctorEntity, {
-        name: createDoctorDTO.name,
+      const savedDoctor = await doctorRepository.save({
+        firstName: createDoctorDTO.firstName,
+        lastName: createDoctorDTO.lastName,
         birthDate: createDoctorDTO.birthDate,
         gender: createDoctorDTO.gender,
         cpf: createDoctorDTO.cpf,
@@ -41,12 +47,11 @@ export class DoctorsService {
         crmUf: createDoctorDTO.crmUf,
         phone: createDoctorDTO.phone,
         userId: user.id,
-        createdAt: new Date(),
       })
 
-      const savedDoctor = await manager.save(doctor)
+      Logger.log(`Doctor ${savedDoctor.id} successfully created.`)
 
-      return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.name, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
+      return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.firstName, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
     })
   }
 

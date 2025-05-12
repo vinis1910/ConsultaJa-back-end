@@ -8,17 +8,14 @@ export class CreatePatientDTO {
   password: string
 
   @IsString()
-  name: string
+  firstName: string
+
+  @IsString()
+  lastName: string
 
   @IsDateString()
   birthDate: Date
 
   @IsString()
-  gender: string
-
-  @IsString()
   phone: string
-
-  @IsString()
-  cpf: string
 }
