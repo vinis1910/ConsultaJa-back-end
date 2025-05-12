@@ -20,10 +20,10 @@ export class AppointmentsService {
   ) {}
 
   async createAppointment(createAppointmentDTO: CreateAppointmentDTO): Promise<ReturnCreatedAppointmentDTO> {
-    if (!createAppointmentDTO.date || new Date(createAppointmentDTO.date) < new Date()) throw new BadRequestException('Date is a required field or must be greater than the current date.')
-    if (createAppointmentDTO.price == undefined || createAppointmentDTO.price < 0) throw new BadRequestException('Price could not be less than zero.')
-    if (!createAppointmentDTO.patientId) throw new BadRequestException('Patient ID is a required field.')
-    if (!createAppointmentDTO.doctorId) throw new BadRequestException('Doctor ID is a required field.')
+    if (!createAppointmentDTO.date || new Date(createAppointmentDTO.date) < new Date()) throw new BadRequestException('A data é um campo requerido ou precisa ser maior que a data atual.')
+    if (createAppointmentDTO.price == undefined || createAppointmentDTO.price < 0) throw new BadRequestException('O preço não pode ser menor que zero.')
+    if (!createAppointmentDTO.patientId) throw new BadRequestException('O campo paciente é requerido.')
+    if (!createAppointmentDTO.doctorId) throw new BadRequestException('O campo médico é requerido.')
 
     const patient = await this.patientRepository.findOneBy({ id: createAppointmentDTO.patientId })
     if (!patient) throw new BadRequestException(`Paciente com ID=${createAppointmentDTO.patientId} não existe.`)

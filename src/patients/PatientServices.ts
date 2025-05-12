@@ -10,7 +10,6 @@ import { UserEntity } from 'src/users/UserEntity'
 @Injectable()
 export class PatientsService {
   constructor(
-    @InjectRepository(PatientEntity) private readonly patientRepository: Repository<PatientEntity>,
     private readonly userService: UsersService,
     @InjectDataSource()
     private readonly dataSource: DataSource,
@@ -18,9 +17,9 @@ export class PatientsService {
 
   async createPatient(createPatientDTO: CreatePatientDTO): Promise<ReturnCreatedPatientDTO> {
     return await this.dataSource.transaction(async (manager) => {
-      if (!createPatientDTO.name) throw new BadRequestException('Name is a required field.')
-      if (!createPatientDTO.phone) throw new BadRequestException('Phone is a required field.')
-      if (!createPatientDTO.birthDate) throw new BadRequestException('Birth Date is a required field.')
+      if (!createPatientDTO.name) throw new BadRequestException('Nome é um campo requerido.')
+      if (!createPatientDTO.phone) throw new BadRequestException('Telefone é um campo requerido.')
+      if (!createPatientDTO.birthDate) throw new BadRequestException('Data de nascimento é um campo requerido.')
 
       const userRepository = manager.getRepository(UserEntity)
       const patientRepository = manager.getRepository(PatientEntity)

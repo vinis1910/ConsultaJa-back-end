@@ -17,19 +17,19 @@ export class DoctorsService {
   ) {}
 
   async createDoctor(createDoctorDTO: CreateDoctorDTO): Promise<ReturnCreatedDoctorDTO> {
-    if (!createDoctorDTO.name) throw new BadRequestException('Name is a required field.')
-    if (!createDoctorDTO.birthDate) throw new BadRequestException('Birth Date is a required field.')
-    if (!createDoctorDTO.gender) throw new BadRequestException('Gender is a required field.')
-    if (!createDoctorDTO.cpf) throw new BadRequestException('CPF is a required field.')
-    if (!createDoctorDTO.crm) throw new BadRequestException('CRM is a required field.')
-    if (!createDoctorDTO.crmUf) throw new BadRequestException('CRM UF is a required field.')
-    if (!createDoctorDTO.phone) throw new BadRequestException('Phone is a required field.')
+    if (!createDoctorDTO.name) throw new BadRequestException('Nome é um campo requerido.')
+    if (!createDoctorDTO.birthDate) throw new BadRequestException('Data de nascimento é um campo requerido.')
+    if (!createDoctorDTO.gender) throw new BadRequestException('Gênero é um campo requerido.')
+    if (!createDoctorDTO.cpf) throw new BadRequestException('CPF é um campo requerido.')
+    if (!createDoctorDTO.crm) throw new BadRequestException('CRM é um campo requerido.')
+    if (!createDoctorDTO.crmUf) throw new BadRequestException('CRM UF é um campo requerido.')
+    if (!createDoctorDTO.phone) throw new BadRequestException('Telefone é um campo requerido.')
 
-    if (!this.isValidCPF(createDoctorDTO.cpf)) throw new BadRequestException('CPF is not valid.')
-    if (!this.isValidCRM(createDoctorDTO.crm)) throw new BadRequestException('CRM is not valid.')
+    if (!this.isValidCPF(createDoctorDTO.cpf)) throw new BadRequestException('CPF não é válido.')
+    if (!this.isValidCRM(createDoctorDTO.crm)) throw new BadRequestException('CRM não é válido.')
 
     const doctor = await this.doctorRepository.findOneBy({ cpf: createDoctorDTO.cpf })
-    if (doctor) throw new BadRequestException(`Doctor with CPF=${createDoctorDTO.cpf} already exists.`)
+    if (doctor) throw new BadRequestException(`Médico(a) com CPF=${createDoctorDTO.cpf} já existente.`)
 
     return await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(UserEntity)
@@ -45,7 +45,6 @@ export class DoctorsService {
         crmUf: createDoctorDTO.crmUf,
         phone: createDoctorDTO.phone,
         userId: user.id,
-        createdAt: new Date(),
       })
 
       Logger.log(`Doctor ${savedDoctor.id} successfully created.`)
