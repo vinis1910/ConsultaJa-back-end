@@ -17,7 +17,8 @@ export class DoctorsService {
   ) {}
 
   async createDoctor(createDoctorDTO: CreateDoctorDTO): Promise<ReturnCreatedDoctorDTO> {
-    if (!createDoctorDTO.name) throw new BadRequestException('Nome é um campo requerido.')
+    if (!createDoctorDTO.firstName) throw new BadRequestException('Primeiro nome é um campo requerido.')
+    if (!createDoctorDTO.lastName) throw new BadRequestException('Ultimo é um campo requerido.')
     if (!createDoctorDTO.birthDate) throw new BadRequestException('Data de nascimento é um campo requerido.')
     if (!createDoctorDTO.gender) throw new BadRequestException('Gênero é um campo requerido.')
     if (!createDoctorDTO.cpf) throw new BadRequestException('CPF é um campo requerido.')
@@ -37,7 +38,8 @@ export class DoctorsService {
       const user = await this.userService.createUser({ email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' }, userRepository)
 
       const savedDoctor = await doctorRepository.save({
-        name: createDoctorDTO.name,
+        firstName: createDoctorDTO.firstName,
+        lastName: createDoctorDTO.lastName,
         birthDate: createDoctorDTO.birthDate,
         gender: createDoctorDTO.gender,
         cpf: createDoctorDTO.cpf,
@@ -49,7 +51,7 @@ export class DoctorsService {
 
       Logger.log(`Doctor ${savedDoctor.id} successfully created.`)
 
-      return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.name, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
+      return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.firstName, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
     })
   }
 

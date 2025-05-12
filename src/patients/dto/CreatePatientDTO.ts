@@ -8,7 +8,10 @@ export class CreatePatientDTO {
   password: string
 
   @IsString()
-  name: string
+  firstName: string
+
+  @IsString()
+  lastName: string
 
   @IsDateString()
   birthDate: Date

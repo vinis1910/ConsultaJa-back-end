@@ -17,7 +17,8 @@ export class PatientsService {
 
   async createPatient(createPatientDTO: CreatePatientDTO): Promise<ReturnCreatedPatientDTO> {
     return await this.dataSource.transaction(async (manager) => {
-      if (!createPatientDTO.name) throw new BadRequestException('Nome é um campo requerido.')
+      if (!createPatientDTO.firstName) throw new BadRequestException('Primeiro nome é um campo requerido.')
+      if (!createPatientDTO.lastName) throw new BadRequestException('Ultimo é um campo requerido.')
       if (!createPatientDTO.phone) throw new BadRequestException('Telefone é um campo requerido.')
       if (!createPatientDTO.birthDate) throw new BadRequestException('Data de nascimento é um campo requerido.')
 
@@ -27,7 +28,8 @@ export class PatientsService {
       const user = await this.userService.createUser({ email: createPatientDTO.email, password: createPatientDTO.password, role: 'Patient' }, userRepository)
 
       const patient = await patientRepository.save({
-        name: createPatientDTO.name,
+        firstName: createPatientDTO.firstName,
+        lastName: createPatientDTO.lastName,
         phone: createPatientDTO.phone,
         birthDate: createPatientDTO.birthDate,
         userId: user.id,
