@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, HttpStatus, InternalServerErrorException, Post } from '@nestjs/common'
+import { Body, Controller, HttpException, HttpStatus, InternalServerErrorException, Patch, Post, Param, ParseIntPipe } from '@nestjs/common'
 import { AppointmentsService } from './AppointmentsService'
 import { CreateAppointmentDTO } from './dto/CreateAppointmentDTO'
 import { ResponseDTO } from 'src/utils/ReponseDTO'
@@ -11,7 +11,21 @@ export class AppointmentsController {
   async create(@Body() createAppointmentDTO: CreateAppointmentDTO): Promise<ResponseDTO> {
     try {
       const appointment = await this.appointmentsService.createAppointment(createAppointmentDTO)
-      return new ResponseDTO(HttpStatus.CREATED, 'Appointment created', appointment)
+      return new ResponseDTO(HttpStatus.CREATED, 'Consulta Criada', appointment)
+    } catch (error: unknown) {
+      if (error instanceof HttpException) throw error
+      if (error instanceof Error) {
+        throw new InternalServerErrorException(error.message, 'Unexpected error')
+      }
+      throw new InternalServerErrorException('Unexpected error')
+    }
+  }
+
+  @Patch(':id/cancel')
+  async cancelAppointment(@Param('id', ParseIntPipe) appointmentId: number): Promise<ResponseDTO> {
+    try {
+      await this.appointmentsService.cancelAppointment(appointmentId)
+      return new ResponseDTO(HttpStatus.OK, 'Consulta Cancelada com sucesso', null)
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error
       if (error instanceof Error) {

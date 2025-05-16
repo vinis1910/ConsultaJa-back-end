@@ -44,4 +44,16 @@ export class AppointmentsService {
 
     return new ReturnCreatedAppointmentDTO(new Date(savedAppointment.date).toISOString(), Number(savedAppointment.price), doctor.firstName, patient.firstName)
   }
+
+  async cancelAppointment(appointmentId: number): Promise<void> {
+    const appointment = await this.appointmentRepository.findOneBy({ id: appointmentId })
+    if (!appointment) throw new BadRequestException(`Consulta com ID=${appointmentId} não existe.`)
+
+    if (appointment.status === AppointmentStatus.CANCELED) throw new BadRequestException(`Consulta com ID=${appointmentId} já está cancelada.`)
+    if (appointment.status === AppointmentStatus.COMPLETED) throw new BadRequestException(`Consulta com ID=${appointmentId} já foi concluída.`)
+    if (new Date(appointment.date) < new Date()) throw new BadRequestException(`Consulta com ID=${appointmentId} já passou.`)
+
+    appointment.status = AppointmentStatus.CANCELED
+    await this.appointmentRepository.save(appointment)
+  }
 }
