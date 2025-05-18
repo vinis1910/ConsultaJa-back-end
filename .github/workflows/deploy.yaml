@@ -25,8 +25,8 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_REPO }}:latest
 
-      - name: Deploy local na EC2 (self-hosted runner)
+      - name: Deploy local na AWS
         run: |
           docker pull ${{ secrets.DOCKER_REPO }}:latest
-          docker compose -f /home/ubuntu/deploy/docker-compose.yml down || true
-          docker compose -f /home/ubuntu/deploy/docker-compose.yml up -d
+          docker compose -f /usr/app/docker-compose.yml down || true
+          docker compose -f /usr/app/docker-compose.yml up -d
