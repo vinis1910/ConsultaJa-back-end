@@ -55,6 +55,12 @@ export class DoctorsService {
     })
   }
 
+  async getDoctor(doctorId: number): Promise<DoctorEntity> {
+    const doctor = await this.doctorRepository.findOneBy({ id: doctorId })
+    if (!doctor) throw new BadRequestException(`Médico(a) com ID=${doctorId} não existe.`)
+    return doctor
+  }
+
   private isValidCPF(cpf: string): boolean {
     cpf = cpf.replace(/[^\d]+/g, '')
     if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false

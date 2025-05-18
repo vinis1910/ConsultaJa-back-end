@@ -10,6 +10,8 @@ import { UserEntity } from 'src/users/UserEntity'
 @Injectable()
 export class PatientsService {
   constructor(
+    @InjectRepository(PatientEntity)
+    private readonly patientRepository: Repository<PatientEntity>,
     private readonly userService: UsersService,
     @InjectDataSource()
     private readonly dataSource: DataSource,
@@ -39,5 +41,11 @@ export class PatientsService {
 
       return new ReturnCreatedPatientDTO(createPatientDTO.email)
     })
+  }
+
+  async getPatient(patientId: number): Promise<PatientEntity> {
+    const patient = await this.patientRepository.findOneBy({ id: patientId })
+    if (!patient) throw new BadRequestException(`Paciente com ID=${patientId} não existe.`)
+    return patient
   }
 }
