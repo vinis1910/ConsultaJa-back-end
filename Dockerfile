@@ -1,7 +1,11 @@
 FROM node:lts-alpine
 
-COPY node_modules /usr/src/node_modules
-COPY dist /usr/src/dist
 WORKDIR /usr/src
 
-CMD node dist/Main
+COPY package*.json ./
+RUN yarn install
+
+COPY . .
+RUN yarn build
+
+CMD ["node", "dist/Main"]

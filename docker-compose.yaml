@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: consulta-ja
+    image: ${DOCKER_REPO}:latest
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - '${PORT}:3000'
