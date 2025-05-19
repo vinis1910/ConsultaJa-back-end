@@ -3,10 +3,11 @@ import { UserEntity } from './UserEntity'
 import { Repository } from 'typeorm'
 import { CreateUserDTO } from './dto/CreateUserDTO'
 import * as bcrypt from 'bcryptjs'
+import { InjectRepository } from '@nestjs/typeorm'
 
 @Injectable()
 export class UsersService {
-  constructor() {}
+  constructor(@InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>) {}
 
   async createUser(createUserDTO: CreateUserDTO, userRepository: Repository<UserEntity>): Promise<UserEntity> {
     if (!createUserDTO.email) throw new BadRequestException('Email is a required field.')
@@ -24,5 +25,10 @@ export class UsersService {
 
   private async encryptPassword(password: string): Promise<string> {
     return await bcrypt.hash(password, 10)
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.userRepository.findOneBy({ email: email })
+    return user
   }
 }

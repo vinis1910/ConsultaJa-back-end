@@ -1,8 +1,10 @@
-import { Body, Controller, HttpException, HttpStatus, InternalServerErrorException, Patch, Post, Param, ParseIntPipe } from '@nestjs/common'
+import { Body, Controller, HttpException, HttpStatus, InternalServerErrorException, Patch, Post, Param, ParseIntPipe, UseGuards } from '@nestjs/common'
 import { AppointmentsService } from './AppointmentsService'
 import { CreateAppointmentDTO } from './dto/CreateAppointmentDTO'
 import { ResponseDTO } from 'src/utils/ReponseDTO'
+import { JwtAuthGuard } from 'src/auth/guards/JWTAuthGuard'
 
+@UseGuards(JwtAuthGuard)
 @Controller('appointments')
 export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
