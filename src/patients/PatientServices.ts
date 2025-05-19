@@ -6,6 +6,7 @@ import { CreatePatientDTO } from './dto/CreatePatientDTO'
 import { UsersService } from 'src/users/UserServices'
 import { ReturnCreatedPatientDTO } from './dto/ReturnCreatedPatientDTO'
 import { UserEntity } from 'src/users/UserEntity'
+import { instanceToPlain } from 'class-transformer'
 
 @Injectable()
 export class PatientsService {
@@ -44,8 +45,11 @@ export class PatientsService {
   }
 
   async getPatient(patientId: number): Promise<PatientEntity> {
-    const patient = await this.patientRepository.findOneBy({ id: patientId })
+    const patient = await this.patientRepository.findOne({
+      where: { id: patientId },
+      relations: ['user'],
+    })
     if (!patient) throw new BadRequestException(`Paciente com ID=${patientId} não existe.`)
-    return patient
+    return instanceToPlain(patient) as PatientEntity
   }
 }
