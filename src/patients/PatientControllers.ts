@@ -6,6 +6,7 @@ import { PatientsService } from './PatientServices'
 @Controller('patient')
 export class PatientsController {
   constructor(private readonly patientService: PatientsService) {}
+
   @Post()
   async create(@Body() createPatientDTO: CreatePatientDTO): Promise<ResponseDTO> {
     try {
