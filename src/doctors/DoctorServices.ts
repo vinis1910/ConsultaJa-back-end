@@ -6,6 +6,7 @@ import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
 import { UsersService } from 'src/users/UserServices'
 import { UserEntity } from 'src/users/UserEntity'
+import { SpecializationEntity } from './SpecializationEntity'
 @Injectable()
 export class DoctorsService {
   constructor(
@@ -25,6 +26,7 @@ export class DoctorsService {
     if (!createDoctorDTO.crm) throw new BadRequestException('CRM é um campo requerido.')
     if (!createDoctorDTO.crmUf) throw new BadRequestException('CRM UF é um campo requerido.')
     if (!createDoctorDTO.phone) throw new BadRequestException('Telefone é um campo requerido.')
+    if (!createDoctorDTO.specialization) throw new BadRequestException('Especialização é um campo requerido.')
 
     if (!this.isValidCPF(createDoctorDTO.cpf)) throw new BadRequestException('CPF não é válido.')
     if (!this.isValidCRM(createDoctorDTO.crm)) throw new BadRequestException('CRM não é válido.')
@@ -35,7 +37,12 @@ export class DoctorsService {
     return await this.dataSource.transaction(async (manager) => {
       const userRepository = manager.getRepository(UserEntity)
       const doctorRepository = manager.getRepository(DoctorEntity)
+      const specializationEntity = manager.getRepository(SpecializationEntity)
+
       const user = await this.userService.createUser({ email: createDoctorDTO.email, password: createDoctorDTO.password, role: 'Doctor' }, userRepository)
+
+      const specialization = await specializationEntity.findOneBy({ name: createDoctorDTO.specialization })
+      if (!specialization) throw new BadRequestException('Especialização não é existente.')
 
       const savedDoctor = await doctorRepository.save({
         firstName: createDoctorDTO.firstName,
@@ -47,6 +54,7 @@ export class DoctorsService {
         crmUf: createDoctorDTO.crmUf,
         phone: createDoctorDTO.phone,
         userId: user.id,
+        specializationId: specialization.id,
       })
 
       Logger.log(`Doctor ${savedDoctor.id} successfully created.`)

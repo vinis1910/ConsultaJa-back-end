@@ -1,4 +1,4 @@
-import { IsDateString, IsString } from 'class-validator'
+import { IsDateString, IsNumber, IsString } from 'class-validator'
 
 export class CreateDoctorDTO {
   @IsString()
@@ -30,4 +30,7 @@ export class CreateDoctorDTO {
 
   @IsString()
   crmUf: string
+
+  @IsString()
+  specialization: string
 }
