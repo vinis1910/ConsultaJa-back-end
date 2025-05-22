@@ -1,0 +1,33 @@
+name: Build and deploy in AWS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ secrets.DOCKER_REPO }}:latest
+
+      - name: Deploy local na AWS
+        run: |
+          docker pull ${{ secrets.DOCKER_REPO }}:latest
+          docker-compose -f /usr/app/docker-compose.yml down || true
+          docker-compose -f /usr/app/docker-compose.yml up -d
