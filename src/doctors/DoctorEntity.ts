@@ -31,4 +31,7 @@ export class DoctorEntity {
 
   @Column({ name: 'user_id', type: 'integer' })
   userId: number
+
+  @Column({ name: 'specialization_id', type: 'integer' })
+  specializationId: number
 }
