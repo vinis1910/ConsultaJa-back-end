@@ -7,7 +7,7 @@ import { ReturnCreatedAppointmentDTO } from './dto/ReturnCreatedAppointmentDTO'
 import { PatientEntity } from 'src/patients/PatientEntity'
 import { DoctorEntity } from 'src/doctors/DoctorEntity'
 import { AppointmentStatus } from './AppointmetsStatus'
-import { parse, format, addMinutes } from 'date-fns'
+import { format, addMinutes } from 'date-fns'
 import { DoctorAvailabilityEntity } from 'src/doctors/DoctorAvailabilityEntity'
 
 @Injectable()
@@ -57,7 +57,6 @@ export class AppointmentsService {
         status: AppointmentStatus.SCHEDULED,
       },
     })
-
     if (conflict) throw new BadRequestException('Horário já ocupado.')
 
     const newAppointment = await this.appointmentRepository.save({
