@@ -6,7 +6,9 @@ import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
 import { UsersService } from 'src/users/UserServices'
 import { UserEntity } from 'src/users/UserEntity'
+import { instanceToPlain } from 'class-transformer'
 import { SpecializationEntity } from './SpecializationEntity'
+
 @Injectable()
 export class DoctorsService {
   constructor(
@@ -61,6 +63,15 @@ export class DoctorsService {
 
       return new ReturnCreatedDoctorDTO(savedDoctor.id, savedDoctor.firstName, savedDoctor.birthDate, savedDoctor.crm, savedDoctor.crmUf, savedDoctor.phone, user.email)
     })
+  }
+
+  async getDoctor(doctorId: number): Promise<DoctorEntity> {
+    const doctor = await this.doctorRepository.findOne({
+      where: { id: doctorId },
+      relations: ['user'],
+    })
+    if (!doctor) throw new BadRequestException(`Médico(a) com ID=${doctorId} não existe.`)
+    return instanceToPlain(doctor) as DoctorEntity
   }
 
   private isValidCPF(cpf: string): boolean {
