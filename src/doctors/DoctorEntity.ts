@@ -36,4 +36,7 @@ export class DoctorEntity {
   @ManyToOne(() => UserEntity, (user) => user.id, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity
+
+  @Column({ name: 'specialization_id', type: 'integer' })
+  specializationId: number
 }
