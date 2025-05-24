@@ -6,9 +6,10 @@ import { UserEntity } from 'src/users/UserEntity'
 import { UsersService } from 'src/users/UserServices'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { SpecializationEntity } from './SpecializationEntity'
+import { DoctorAvailabilityEntity } from './DoctorAvailabilityEntity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DoctorEntity, UserEntity, SpecializationEntity])],
+  imports: [TypeOrmModule.forFeature([DoctorEntity, UserEntity, SpecializationEntity, DoctorAvailabilityEntity])],
   providers: [DoctorsService, UsersService],
   controllers: [DoctorsController],
 })

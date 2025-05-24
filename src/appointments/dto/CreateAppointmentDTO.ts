@@ -1,11 +1,11 @@
-import { IsNumber, IsDateString } from 'class-validator'
+import { IsNumber, IsDateString, Matches } from 'class-validator'
 
 export class CreateAppointmentDTO {
   @IsDateString()
-  date: Date
+  date: string
 
-  @IsNumber()
-  price: number
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/)
+  startTime: string
 
   @IsNumber()
   patientId: number
