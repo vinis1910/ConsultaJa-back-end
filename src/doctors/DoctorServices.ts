@@ -8,6 +8,8 @@ import { UsersService } from 'src/users/UserServices'
 import { UserEntity } from 'src/users/UserEntity'
 import { instanceToPlain } from 'class-transformer'
 import { SpecializationEntity } from './SpecializationEntity'
+import { CreateConfigDaysDTO } from './dto/CreateConfigDaysDTO'
+import { DoctorAvailabilityEntity } from './DoctorAvailabilityEntity'
 
 @Injectable()
 export class DoctorsService {
@@ -65,13 +67,38 @@ export class DoctorsService {
     })
   }
 
-  async getDoctor(doctorId: number): Promise<DoctorEntity> {
+  async getDoctor(userId: number): Promise<DoctorEntity> {
     const doctor = await this.doctorRepository.findOne({
-      where: { id: doctorId },
+      where: { userId: userId },
       relations: ['user'],
     })
-    if (!doctor) throw new BadRequestException(`Médico(a) com ID=${doctorId} não existe.`)
+    if (!doctor) throw new BadRequestException(`Médico(a) com userID=${userId} não existe.`)
     return instanceToPlain(doctor) as DoctorEntity
+  }
+
+  async createDoctorConfigDays(dto: Array<CreateConfigDaysDTO>) {
+    return await this.dataSource.transaction(async (manager) => {
+      const doctorAvailabilityRepository = manager.getRepository(DoctorAvailabilityEntity)
+      const doctorRespository = manager.getRepository(DoctorEntity)
+
+      const doctor = await doctorRespository.findOne({ where: { userId: dto[0].userId } })
+      if (!doctor) throw new BadRequestException(`Médico(a) com userID=${dto[0].userId} não existe.`)
+
+      doctorAvailabilityRepository.delete({ doctorId: doctor.id })
+      const availability: Partial<DoctorAvailabilityEntity>[] = dto.map((it) => ({
+        weekday: it.day,
+        startTime: it.startTime,
+        endTime: it.endTime,
+        slotInterval: it.interval,
+        doctorId: doctor.id,
+      }))
+
+      return await doctorAvailabilityRepository.save(availability)
+    })
+  }
+
+  formatTime(date: Date): string {
+    return date.toTimeString().slice(0, 8)
   }
 
   private isValidCPF(cpf: string): boolean {

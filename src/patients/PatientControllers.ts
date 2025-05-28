@@ -22,9 +22,9 @@ export class PatientsController {
   }
 
   @Get(':id')
-  async getPatient(@Param('id', ParseIntPipe) patientId: number): Promise<ResponseDTO> {
+  async getPatient(@Param('id', ParseIntPipe) userId: number): Promise<ResponseDTO> {
     try {
-      const patient = await this.patientService.getPatient(patientId)
+      const patient = await this.patientService.getPatient(userId)
       return new ResponseDTO(HttpStatus.OK, 'Paciente encontrado', patient)
     } catch (error) {
       if (error instanceof HttpException) throw error
