@@ -8,6 +8,8 @@ import { UsersService } from 'src/users/UserServices'
 import { UserEntity } from 'src/users/UserEntity'
 import { instanceToPlain } from 'class-transformer'
 import { SpecializationEntity } from './SpecializationEntity'
+import { CreateConfigDaysDTO } from './dto/CreateConfigDaysDTO'
+import { DoctorAvailabilityEntity } from './DoctorAvailabilityEntity'
 
 @Injectable()
 export class DoctorsService {
@@ -72,6 +74,26 @@ export class DoctorsService {
     })
     if (!doctor) throw new BadRequestException(`Médico(a) com ID=${doctorId} não existe.`)
     return instanceToPlain(doctor) as DoctorEntity
+  }
+
+  async createDoctorConfigDays(dto: CreateConfigDaysDTO) {
+    return await this.dataSource.transaction(async (manager) => {
+      const doctorAvailabilityRepository = manager.getRepository(DoctorAvailabilityEntity)
+
+      const availability: Partial<DoctorAvailabilityEntity>[] = dto.configDays.map((it) => ({
+        weekday: it.day,
+        startTime: this.formatTime(it.startTime),
+        endTime: this.formatTime(it.endTime),
+        slotInterval: it.interval,
+        doctorId: dto.doctorId,
+      }))
+
+      return await doctorAvailabilityRepository.save(availability)
+    })
+  }
+
+  formatTime(date: Date): string {
+    return date.toTimeString().slice(0, 8)
   }
 
   private isValidCPF(cpf: string): boolean {

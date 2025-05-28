@@ -100,4 +100,48 @@ export class AppointmentsService {
     if (appointment.status === AppointmentStatus.COMPLETED) throw new BadRequestException(`Consulta com ID=${appointmentId} já foi concluída.`)
     if (new Date(appointment.date) < new Date()) throw new BadRequestException(`Consulta com ID=${appointmentId} já passou.`)
   }
+
+  async getDoctorAppointments(doctorId: number, date: string) {
+    const dateMidnight = new Date(`${date}T00:00`)
+    const weekday = format(dateMidnight, 'eeee').toLowerCase()
+
+    const scheduleDay = await this.doctorAvailabilityRepository.findOne({
+      where: { doctorId, weekday },
+    })
+
+    if (!scheduleDay) throw new BadRequestException('Agenda do médico não está configurada para esse dia.')
+
+    const scheduleStart = this.combineDateAndTimeFromTimeString(date, scheduleDay.startTime as unknown as string)
+    const scheduleEnd = this.combineDateAndTimeFromTimeString(date, scheduleDay.endTime as unknown as string)
+
+    const allSlots: { start: Date; end: Date }[] = []
+    let current = new Date(scheduleStart)
+
+    while (current < scheduleEnd) {
+      const next = addMinutes(current, scheduleDay.slotInterval)
+      if (next <= scheduleEnd) {
+        allSlots.push({ start: new Date(current), end: new Date(next) })
+      }
+      current = next
+    }
+
+    const appointments = await this.appointmentRepository.find({
+      where: {
+        doctorId,
+        date: dateMidnight,
+        status: AppointmentStatus.SCHEDULED,
+      },
+    })
+
+    const result = allSlots.map(({ start, end }) => {
+      const isOccupied = appointments.some((app) => app.startTime.getTime() === start.getTime())
+      return {
+        startTime: format(start, 'HH:mm'),
+        endTime: format(end, 'HH:mm'),
+        status: isOccupied ? 'unavailable' : 'available',
+      }
+    })
+
+    return result
+  }
 }

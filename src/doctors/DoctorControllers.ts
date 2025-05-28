@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorEx
 import { DoctorsService } from './DoctorServices'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ResponseDTO } from 'src/utils/ReponseDTO'
+import { CreateConfigDaysDTO } from './dto/CreateConfigDaysDTO'
 
 @Controller('doctors')
 export class DoctorsController {
@@ -26,6 +27,20 @@ export class DoctorsController {
     try {
       const doctor = await this.doctorsService.getDoctor(doctorId)
       return new ResponseDTO(HttpStatus.OK, 'Médico encontrado', doctor)
+    } catch (error: unknown) {
+      if (error instanceof HttpException) throw error
+      if (error instanceof Error) {
+        throw new InternalServerErrorException(error.message, 'Erro inesperado')
+      }
+      throw new InternalServerErrorException('Erro inesperado')
+    }
+  }
+
+  @Post('config-avaibility')
+  async createDoctorAvailability(@Body() dto: CreateConfigDaysDTO): Promise<ResponseDTO> {
+    try {
+      const availability = await this.doctorsService.createDoctorConfigDays(dto)
+      return new ResponseDTO(HttpStatus.CREATED, 'Configuração de horário criada com sucesso', availability)
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error
       if (error instanceof Error) {
