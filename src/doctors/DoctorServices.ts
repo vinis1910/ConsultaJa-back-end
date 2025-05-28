@@ -80,7 +80,7 @@ export class DoctorsService {
     return await this.dataSource.transaction(async (manager) => {
       const doctorAvailabilityRepository = manager.getRepository(DoctorAvailabilityEntity)
       const doctorRespository = manager.getRepository(DoctorEntity)
-      console.log(dto[0].userId)
+
       const doctor = await doctorRespository.findOne({ where: { userId: dto[0].userId } })
       if (!doctor) throw new BadRequestException(`Médico(a) com userID=${dto[0].userId} não existe.`)
 
