@@ -79,11 +79,12 @@ export class DoctorsService {
   async createDoctorConfigDays(dto: Array<CreateConfigDaysDTO>) {
     return await this.dataSource.transaction(async (manager) => {
       const doctorAvailabilityRepository = manager.getRepository(DoctorAvailabilityEntity)
-
+      console.log(typeof dto[0].startTime)
+      doctorAvailabilityRepository.delete(dto[0].doctorId)
       const availability: Partial<DoctorAvailabilityEntity>[] = dto.map((it) => ({
         weekday: it.day,
-        startTime: this.formatTime(it.startTime),
-        endTime: this.formatTime(it.endTime),
+        startTime: it.startTime,
+        endTime: it.endTime,
         slotInterval: it.interval,
         doctorId: it.doctorId,
       }))

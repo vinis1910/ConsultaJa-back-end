@@ -4,8 +4,8 @@
 
 export class CreateConfigDaysDTO {
   day: string
-  startTime: Date
-  endTime: Date
+  startTime: string
+  endTime: string
   interval: number
   doctorId: number
 }
