@@ -67,12 +67,12 @@ export class DoctorsService {
     })
   }
 
-  async getDoctor(doctorId: number): Promise<DoctorEntity> {
+  async getDoctor(userId: number): Promise<DoctorEntity> {
     const doctor = await this.doctorRepository.findOne({
-      where: { id: doctorId },
+      where: { userId: userId },
       relations: ['user'],
     })
-    if (!doctor) throw new BadRequestException(`Médico(a) com ID=${doctorId} não existe.`)
+    if (!doctor) throw new BadRequestException(`Médico(a) com userID=${userId} não existe.`)
     return instanceToPlain(doctor) as DoctorEntity
   }
 
