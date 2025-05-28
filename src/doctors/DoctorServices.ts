@@ -79,14 +79,18 @@ export class DoctorsService {
   async createDoctorConfigDays(dto: Array<CreateConfigDaysDTO>) {
     return await this.dataSource.transaction(async (manager) => {
       const doctorAvailabilityRepository = manager.getRepository(DoctorAvailabilityEntity)
-      console.log(dto[0].doctorId)
-      doctorAvailabilityRepository.delete({ doctorId: dto[0].doctorId })
+      const doctorRespository = manager.getRepository(DoctorEntity)
+      console.log(dto[0].userId)
+      const doctor = await doctorRespository.findOne({ where: { userId: dto[0].userId } })
+      if (!doctor) throw new BadRequestException(`Médico(a) com userID=${dto[0].userId} não existe.`)
+
+      doctorAvailabilityRepository.delete({ doctorId: doctor.id })
       const availability: Partial<DoctorAvailabilityEntity>[] = dto.map((it) => ({
         weekday: it.day,
         startTime: it.startTime,
         endTime: it.endTime,
         slotInterval: it.interval,
-        doctorId: it.doctorId,
+        doctorId: doctor.id,
       }))
 
       return await doctorAvailabilityRepository.save(availability)
