@@ -6,14 +6,20 @@ export class MedicalAppointmentEntity {
   @PrimaryGeneratedColumn('increment')
   id: number
 
-  @Column({ name: 'date', type: 'timestamp' })
+  @Column({ name: 'date', type: 'date' })
   date: Date
+
+  @Column({ name: 'start_at', type: 'timestamp' })
+  startTime: Date
+
+  @Column({ name: 'end_time', type: 'timestamp' })
+  endTime: Date
 
   @Column({ name: 'status', type: 'enum', enum: AppointmentStatus, default: AppointmentStatus.SCHEDULED })
   status: AppointmentStatus
 
   @Column({ name: 'price', type: 'numeric' })
-  price: number
+  price?: number
 
   @Column({ name: 'patient_id', type: 'integer' })
   patientId: number
