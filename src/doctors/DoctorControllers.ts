@@ -36,8 +36,8 @@ export class DoctorsController {
     }
   }
 
-  @Post('config-avaibility')
-  async createDoctorAvailability(@Body() dto: CreateConfigDaysDTO): Promise<ResponseDTO> {
+  @Post('config-availability')
+  async createDoctorAvailability(@Body() dto: Array<CreateConfigDaysDTO>): Promise<ResponseDTO> {
     try {
       const availability = await this.doctorsService.createDoctorConfigDays(dto)
       return new ResponseDTO(HttpStatus.CREATED, 'Configuração de horário criada com sucesso', availability)
