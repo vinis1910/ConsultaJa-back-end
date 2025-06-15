@@ -1,10 +1,11 @@
-import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, Post, ParseIntPipe, Param, Patch, Query } from '@nestjs/common'
+import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, Post, ParseIntPipe, Param, Patch, Query, UseGuards } from '@nestjs/common'
 import { DoctorsService } from './DoctorServices'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ResponseDTO } from 'src/utils/ReponseDTO'
 import { CreateConfigDaysDTO } from './dto/CreateConfigDaysDTO'
 import { UpdateDoctorDTO } from './dto/UpdateDoctorDTO'
 import { SearchDoctorDTO } from './dto/SearchDoctorDTO'
+import { JwtAuthGuard } from 'src/auth/guards/JWTAuthGuard'
 
 @Controller('doctors')
 export class DoctorsController {
@@ -39,6 +40,7 @@ export class DoctorsController {
   }
 
   @Post('config-availability')
+  @UseGuards(JwtAuthGuard)
   async createDoctorAvailability(@Body() dto: Array<CreateConfigDaysDTO>): Promise<ResponseDTO> {
     try {
       const availability = await this.doctorsService.createDoctorConfigDays(dto)
@@ -51,7 +53,9 @@ export class DoctorsController {
       throw new InternalServerErrorException('Erro inesperado')
     }
   }
+
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   async update(@Param('id', ParseIntPipe) id: number, @Body() updateDTO: UpdateDoctorDTO): Promise<ResponseDTO> {
     try {
       const updatedDoctor = await this.doctorsService.updateDoctor(id, updateDTO)
