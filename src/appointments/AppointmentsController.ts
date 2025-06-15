@@ -3,7 +3,7 @@ import { AppointmentsService } from './AppointmentsService'
 import { CreateAppointmentDTO } from './dto/CreateAppointmentDTO'
 import { ResponseDTO } from 'src/utils/ReponseDTO'
 import { JwtAuthGuard } from 'src/auth/guards/JWTAuthGuard'
-
+import { RescheduleAppointmentDTO } from './dto/RescheduleAppointmentDTO'
 @UseGuards(JwtAuthGuard)
 @Controller('appointments')
 export class AppointmentsController {
@@ -42,6 +42,19 @@ export class AppointmentsController {
     try {
       await this.appointmentsService.cancelAppointment(appointmentId)
       return new ResponseDTO(HttpStatus.OK, 'Consulta Cancelada com sucesso', null)
+    } catch (error: unknown) {
+      if (error instanceof HttpException) throw error
+      if (error instanceof Error) {
+        throw new InternalServerErrorException(error.message, 'Unexpected error')
+      }
+      throw new InternalServerErrorException('Unexpected error')
+    }
+  }
+  @Patch(':id/reschedule')
+  async reschedule(@Param('id', ParseIntPipe) id: number, @Body() rescheduleDTO: RescheduleAppointmentDTO): Promise<ResponseDTO> {
+    try {
+      const updatedAppointment = await this.appointmentsService.rescheduleAppointment(id, rescheduleDTO)
+      return new ResponseDTO(HttpStatus.OK, 'Consulta remarcada com sucesso.', updatedAppointment)
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error
       if (error instanceof Error) {
