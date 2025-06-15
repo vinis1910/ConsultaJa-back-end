@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, Post, ParseIntPipe, Param } from '@nestjs/common'
+import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, Post, ParseIntPipe, Param, Patch } from '@nestjs/common'
 import { DoctorsService } from './DoctorServices'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ResponseDTO } from 'src/utils/ReponseDTO'
 import { CreateConfigDaysDTO } from './dto/CreateConfigDaysDTO'
+import { UpdateDoctorDTO } from './dto/UpdateDoctorDTO'
 
 @Controller('doctors')
 export class DoctorsController {
@@ -41,6 +42,19 @@ export class DoctorsController {
     try {
       const availability = await this.doctorsService.createDoctorConfigDays(dto)
       return new ResponseDTO(HttpStatus.CREATED, 'Configuração de horário criada com sucesso', availability)
+    } catch (error: unknown) {
+      if (error instanceof HttpException) throw error
+      if (error instanceof Error) {
+        throw new InternalServerErrorException(error.message, 'Erro inesperado')
+      }
+      throw new InternalServerErrorException('Erro inesperado')
+    }
+  }
+  @Patch(':id')
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateDTO: UpdateDoctorDTO): Promise<ResponseDTO> {
+    try {
+      const updatedDoctor = await this.doctorsService.updateDoctor(id, updateDTO)
+      return new ResponseDTO(HttpStatus.OK, 'Médico atualizado com sucesso.', updatedDoctor)
     } catch (error: unknown) {
       if (error instanceof HttpException) throw error
       if (error instanceof Error) {

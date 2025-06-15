@@ -10,6 +10,7 @@ import { instanceToPlain } from 'class-transformer'
 import { SpecializationEntity } from './SpecializationEntity'
 import { CreateConfigDaysDTO } from './dto/CreateConfigDaysDTO'
 import { DoctorAvailabilityEntity } from './DoctorAvailabilityEntity'
+import { UpdateDoctorDTO } from './dto/UpdateDoctorDTO'
 
 @Injectable()
 export class DoctorsService {
@@ -95,6 +96,20 @@ export class DoctorsService {
 
       return await doctorAvailabilityRepository.save(availability)
     })
+  }
+
+  async updateDoctor(id: number, updateDTO: UpdateDoctorDTO): Promise<DoctorEntity> {
+    const doctor = await this.doctorRepository.findOneBy({ id })
+
+    if (!doctor) {
+      throw new BadRequestException(`Médico com ID=${id} não encontrado.`)
+    }
+
+    Object.assign(doctor, updateDTO)
+
+    const updatedDoctor = await this.doctorRepository.save(doctor)
+
+    return updatedDoctor
   }
 
   formatTime(date: Date): string {
