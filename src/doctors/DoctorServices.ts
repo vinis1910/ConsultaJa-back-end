@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { InjectRepository, InjectDataSource } from '@nestjs/typeorm'
-import { DataSource, Repository } from 'typeorm'
+import { DataSource, FindOptionsWhere, Like, Repository } from 'typeorm'
 import { DoctorEntity } from './DoctorEntity'
 import { CreateDoctorDTO } from './dto/CreateDoctorDTO'
 import { ReturnCreatedDoctorDTO } from './dto/ReturnCreatedDoctorDTO'
@@ -11,12 +11,15 @@ import { SpecializationEntity } from './SpecializationEntity'
 import { CreateConfigDaysDTO } from './dto/CreateConfigDaysDTO'
 import { DoctorAvailabilityEntity } from './DoctorAvailabilityEntity'
 import { UpdateDoctorDTO } from './dto/UpdateDoctorDTO'
+import { SearchDoctorDTO } from './dto/SearchDoctorDTO'
 
 @Injectable()
 export class DoctorsService {
   constructor(
     @InjectRepository(DoctorEntity)
     private readonly doctorRepository: Repository<DoctorEntity>,
+    @InjectRepository(SpecializationEntity)
+    private readonly specializationRepository: Repository<SpecializationEntity>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
     private readonly userService: UsersService,
@@ -100,16 +103,26 @@ export class DoctorsService {
 
   async updateDoctor(id: number, updateDTO: UpdateDoctorDTO): Promise<DoctorEntity> {
     const doctor = await this.doctorRepository.findOneBy({ id })
-
-    if (!doctor) {
-      throw new BadRequestException(`Médico com ID=${id} não encontrado.`)
-    }
-
+    if (!doctor) throw new BadRequestException(`Médico com ID=${id} não encontrado.`)
     Object.assign(doctor, updateDTO)
-
     const updatedDoctor = await this.doctorRepository.save(doctor)
-
     return updatedDoctor
+  }
+
+  async listDoctors(filter: SearchDoctorDTO): Promise<DoctorEntity[]> {
+    const query = this.doctorRepository.createQueryBuilder('doctor').leftJoinAndSelect('doctor.address', 'address')
+
+    const specialization = await this.specializationRepository.findOne({ where: { name: filter.specialization } })
+    if (!specialization) throw new BadRequestException(`especialização não encontrada.`)
+
+    if (filter.specialization) {
+      query.andWhere('doctor.specializationId = :specialization', {
+        specialization: specialization.id,
+      })
+    }
+    if (filter.city) query.andWhere('address.city ILIKE :city', { city: `%${filter.city}%` })
+
+    return await query.getMany()
   }
 
   formatTime(date: Date): string {
