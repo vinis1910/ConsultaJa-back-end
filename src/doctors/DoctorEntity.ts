@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToOne } from 'typeorm'
 import { UserEntity } from 'src/users/UserEntity'
+import { AddressEntity } from './AddressEntity'
 
 @Entity('doctors')
 export class DoctorEntity {
@@ -33,10 +34,17 @@ export class DoctorEntity {
   @Column({ name: 'user_id', type: 'integer' })
   userId: number
 
-  @ManyToOne(() => UserEntity, (user) => user.id, { eager: true })
+  @Column({ name: 'specialization_id', type: 'integer' })
+  specializationId: number
+
+  @Column({ name: 'address_id', type: 'integer' })
+  addressId: number
+
+  @ManyToOne(() => UserEntity, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity
 
-  @Column({ name: 'specialization_id', type: 'integer' })
-  specializationId: number
+  @OneToOne(() => AddressEntity, { cascade: true })
+  @JoinColumn({ name: 'address_id' })
+  address: AddressEntity
 }

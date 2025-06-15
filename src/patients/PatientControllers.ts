@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, Post, ParseIntPipe, Param, Patch } from '@nestjs/common'
+import { Body, Controller, Get, HttpException, HttpStatus, InternalServerErrorException, Post, ParseIntPipe, Param, Patch, UseGuards } from '@nestjs/common'
 import { CreatePatientDTO } from 'src/patients/dto/CreatePatientDTO'
 import { ResponseDTO } from 'src/utils/ReponseDTO'
 import { PatientsService } from './PatientServices'
 import { UpdatePatientDTO } from './dto/UpdatePatientDTO'
+import { JwtAuthGuard } from 'src/auth/guards/JWTAuthGuard'
 
 @Controller('patient')
 export class PatientsController {
@@ -36,6 +37,7 @@ export class PatientsController {
     }
   }
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   async update(@Param('id', ParseIntPipe) id: number, @Body() updateDTO: UpdatePatientDTO): Promise<ResponseDTO> {
     try {
       const updatedPatient = await this.patientService.updatePatient(id, updateDTO)
