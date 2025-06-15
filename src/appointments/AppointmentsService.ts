@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, Not } from 'typeorm'
 import { MedicalAppointmentEntity } from './MedicalAppointmentEntity'
 import { CreateAppointmentDTO } from './dto/CreateAppointmentDTO'
 import { ReturnCreatedAppointmentDTO } from './dto/ReturnCreatedAppointmentDTO'
@@ -9,6 +9,8 @@ import { DoctorEntity } from 'src/doctors/DoctorEntity'
 import { AppointmentStatus } from './AppointmetsStatus'
 import { format, addMinutes } from 'date-fns'
 import { DoctorAvailabilityEntity } from 'src/doctors/DoctorAvailabilityEntity'
+import { RescheduleAppointmentDTO } from './dto/RescheduleAppointmentDTO'
+import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception'
 
 @Injectable()
 export class AppointmentsService {
@@ -143,5 +145,157 @@ export class AppointmentsService {
     })
 
     return result
+  }
+
+  async rescheduleAppointment(id: number, rescheduleDTO: RescheduleAppointmentDTO): Promise<MedicalAppointmentEntity> {
+    const appointment = await this.appointmentRepository.findOneBy({ id })
+
+    if (!appointment) throw new BadRequestException(`Consulta com ID=${id} não encontrada.`)
+
+    const doctorId = appointment.doctorId
+    const dateObj = new Date(rescheduleDTO.newDate)
+    const dateString = dateObj.toISOString().split('T')[0]
+
+    const doctorAvailability = await this.doctorAvailabilityRepository.findOne({
+      where: { doctorId, weekday: format(new Date(dateString), 'eeee').toLowerCase() },
+    })
+
+    if (!doctorAvailability) {
+      throw new BadRequestException('O médico não tem agenda configurada para esse dia.')
+    }
+
+    const newStart = this.combineDateAndTimeFromTimeString(dateString, rescheduleDTO.newStartTime)
+    const newEnd = this.combineDateAndTimeFromTimeString(dateString, rescheduleDTO.newEndTime)
+
+    const scheduleStart = this.combineDateAndTimeFromTimeString(dateString, doctorAvailability.startTime)
+    const scheduleEnd = this.combineDateAndTimeFromTimeString(dateString, doctorAvailability.endTime)
+
+    if (newStart < scheduleStart || newEnd > scheduleEnd) {
+      throw new BadRequestException('O horário está fora da agenda disponível do médico.')
+    }
+
+    const overlapping = await this.appointmentRepository.findOne({
+      where: {
+        doctorId,
+        date: rescheduleDTO.newDate,
+        startTime: newStart,
+        status: Not(AppointmentStatus.CANCELED),
+      },
+    })
+
+    if (overlapping) {
+      throw new BadRequestException('Esse horário já está ocupado por outra consulta.')
+    }
+
+    // Atualiza os campos
+    appointment.date = rescheduleDTO.newDate
+    appointment.startTime = newStart
+    appointment.endTime = newEnd
+    appointment.status = AppointmentStatus.SCHEDULED
+
+    const updatedAppointment = await this.appointmentRepository.save(appointment)
+
+    return updatedAppointment
+  }
+
+  async getDoctorAvailabilityFlexible(doctorId: number, date?: string, weekday?: string): Promise<any> {
+    const validWeekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
+    let targetWeekday: string | undefined
+    let targetDate: string | undefined
+
+    if (date) {
+      const [year, month, day] = date.split('-').map(Number)
+      if (!year || !month || !day) {
+        throw new BadRequestException('Data inválida no parâmetro "date". Formato esperado: YYYY-MM-DD.')
+      }
+
+      targetDate = date
+      const derivedWeekday = format(new Date(`${date}T00:00:00`), 'eeee').toLowerCase()
+
+      if (weekday) {
+        if (!validWeekdays.includes(weekday.toLowerCase())) {
+          throw new BadRequestException(`Dia da semana inválido. Use: ${validWeekdays.join(', ')}`)
+        }
+
+        if (weekday.toLowerCase() !== derivedWeekday) {
+          throw new BadRequestException(`Inconsistência: o weekday informado (${weekday}) não corresponde ao dia da data (${derivedWeekday}).`)
+        }
+
+        targetWeekday = weekday.toLowerCase()
+      } else {
+        targetWeekday = derivedWeekday
+      }
+    } else if (weekday) {
+      if (!validWeekdays.includes(weekday.toLowerCase())) {
+        throw new BadRequestException(`Dia da semana inválido. Use: ${validWeekdays.join(', ')}`)
+      }
+      targetWeekday = weekday.toLowerCase()
+    }
+
+    if (targetDate && targetWeekday) {
+      const doctorSchedule = await this.doctorAvailabilityRepository.findOne({
+        where: { doctorId, weekday: targetWeekday },
+      })
+
+      if (!doctorSchedule) {
+        throw new NotFoundException(`O médico não tem agenda configurada para ${targetWeekday}.`)
+      }
+
+      const scheduleStart = this.combineDateAndTimeFromTimeString(targetDate, doctorSchedule.startTime)
+      const scheduleEnd = this.combineDateAndTimeFromTimeString(targetDate, doctorSchedule.endTime)
+
+      const allSlots: { start: Date; end: Date }[] = []
+      let current = new Date(scheduleStart)
+
+      while (current < scheduleEnd) {
+        const next = addMinutes(current, doctorSchedule.slotInterval)
+        if (next <= scheduleEnd) {
+          allSlots.push({ start: new Date(current), end: new Date(next) })
+        }
+        current = next
+      }
+
+      const existingAppointments = await this.appointmentRepository.find({
+        where: {
+          doctorId: doctorId,
+          date: new Date(`${targetDate}T00:00:00`),
+          status: Not(AppointmentStatus.CANCELED),
+        },
+      })
+
+      const availableSlots = allSlots.map(({ start, end }) => {
+        const isOccupied = existingAppointments.some((app) => app.startTime.getTime() === start.getTime())
+        return {
+          startTime: format(start, 'HH:mm'),
+          endTime: format(end, 'HH:mm'),
+          available: !isOccupied,
+        }
+      })
+
+      return availableSlots.filter((slot) => slot.available)
+    }
+
+    if (!targetDate && targetWeekday) {
+      const availability = await this.doctorAvailabilityRepository.find({
+        where: { doctorId, weekday: targetWeekday },
+      })
+
+      if (!availability || availability.length === 0) {
+        throw new NotFoundException(`Nenhuma disponibilidade configurada para ${targetWeekday}.`)
+      }
+
+      return availability
+    }
+
+    const fullAvailability = await this.doctorAvailabilityRepository.find({
+      where: { doctorId },
+    })
+
+    if (!fullAvailability || fullAvailability.length === 0) {
+      throw new NotFoundException('Nenhuma disponibilidade configurada para este médico.')
+    }
+
+    return fullAvailability
   }
 }

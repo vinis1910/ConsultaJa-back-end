@@ -88,7 +88,7 @@ export class DoctorsService {
       const doctor = await doctorRespository.findOne({ where: { userId: dto[0].userId } })
       if (!doctor) throw new BadRequestException(`Médico(a) com userID=${dto[0].userId} não existe.`)
 
-      doctorAvailabilityRepository.delete({ doctorId: doctor.id })
+      await doctorAvailabilityRepository.delete({ doctorId: doctor.id })
       const availability: Partial<DoctorAvailabilityEntity>[] = dto.map((it) => ({
         weekday: it.day,
         startTime: it.startTime,
