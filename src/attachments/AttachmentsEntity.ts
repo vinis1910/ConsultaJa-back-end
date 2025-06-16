@@ -1,16 +1,26 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { DoctorEntity } from 'src/doctors/DoctorEntity'
+import { PatientEntity } from 'src/patients/PatientEntity'
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 
-@Entity('attachments_chat')
+@Entity('attachments')
 export class AttachmentsEntity {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id: number
 
   @Column({ name: 'aws_key', type: 'varchar' })
-  awsKey: string;
+  awsKey: string
 
-  @Column({ name: 'message_id', type: 'integer' })
-  messageId: number;
+  @Column({ name: 'patient_id', type: 'integer' })
+  patientId: number
 
-  @Column({ name: 'type', type: 'integer' })
-  type: string;
+  @Column({ name: 'doctor_id', type: 'integer' })
+  doctorId: number
+
+  @ManyToOne(() => DoctorEntity)
+  @JoinColumn({ name: 'doctor_id' })
+  doctor: DoctorEntity
+
+  @ManyToOne(() => PatientEntity)
+  @JoinColumn({ name: 'patient_id' })
+  patient: PatientEntity
 }

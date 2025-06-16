@@ -8,6 +8,7 @@ import { DoctorsModule } from './doctors/DoctorModules'
 import { AppointmentsModule } from './appointments/AppointmentsModules'
 import { ChatsModule } from './chats/ChatMessageModules'
 import { Database } from './configs/DatabaseConfiguration'
+import { AttachmentsModule } from './attachments/AttachmentsModules'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { Database } from './configs/DatabaseConfiguration'
     DoctorsModule,
     AppointmentsModule,
     ChatsModule,
+    AttachmentsModule,
   ],
 })
 export class AppModule {}
