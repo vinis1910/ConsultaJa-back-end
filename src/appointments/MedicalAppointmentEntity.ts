@@ -1,5 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { AppointmentStatus } from './AppointmetsStatus'
+import { DoctorEntity } from 'src/doctors/DoctorEntity'
+import { PatientEntity } from 'src/patients/PatientEntity'
 
 @Entity('medical_appointment')
 export class MedicalAppointmentEntity {
@@ -29,4 +31,12 @@ export class MedicalAppointmentEntity {
 
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date
+
+  @OneToOne(() => DoctorEntity)
+  @JoinColumn({ name: 'doctor_id' })
+  doctor: DoctorEntity
+
+  @OneToOne(() => PatientEntity)
+  @JoinColumn({ name: 'patient_id' })
+  patient: PatientEntity
 }

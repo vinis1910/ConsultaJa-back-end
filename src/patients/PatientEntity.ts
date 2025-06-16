@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { UserEntity } from 'src/users/UserEntity'
 
 @Entity('patients')
@@ -21,7 +21,7 @@ export class PatientEntity {
   @Column({ name: 'user_id', type: 'integer' })
   userId: number
 
-  @ManyToOne(() => UserEntity, (user) => user.id, { eager: true })
+  @OneToOne(() => UserEntity, (user) => user.id, { eager: true })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity
 }
